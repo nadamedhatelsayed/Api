@@ -3,6 +3,7 @@
 
 namespace App\Repository\Api;
 
+use App\Http\Controllers\Api\ApiResponseTrait;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class  OrderRepository implements OrderRepositoryInterface
 {
+    use ApiResponseTrait;
     public function create()
     {
         //create order and complete payment
@@ -33,9 +35,9 @@ class  OrderRepository implements OrderRepositoryInterface
                 $order->update(['total' => $order->total + $cart->qty * $cart->price]);
             }
         } else {
-            return response()->json([
-                'message' => 'you must login first',
-            ], 500);
+            
+            return $this->apiResponse(null, 'you must login first', 200);
+
         }
         
         return $this->paymentTab($order);
@@ -71,7 +73,9 @@ class  OrderRepository implements OrderRepositoryInterface
             ]
         ], $redirect);
         // return redirect url payment 
-        return $payment->transaction->url;
+       // return $payment->transaction->url;
+        return $this->apiResponse(null, $payment->transaction->url, 200);
+
         // return Redirect::to($payment->transaction->url);
     }
     /**

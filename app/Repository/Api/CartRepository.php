@@ -3,12 +3,14 @@
 
 namespace App\Repository\Api;
 
+use App\Http\Controllers\Api\ApiResponseTrait;
 use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 class  CartRepository implements CartRepositoryInterface
 {
+    use ApiResponseTrait;
     public function add($id)
     {
         if (Auth::check()) {
@@ -28,19 +30,13 @@ class  CartRepository implements CartRepositoryInterface
                         'price'      => $product->price
                     ]);
                 } else {
-                    return response()->json([
-                        'message' => 'product not found',
-                    ], 500);
+
+                    return $this->apiResponse(null, 'product not found', 404);
                 }
             }
-
-            return response()->json([
-                'message' => 'Add to cart sussessfully',
-            ], 201);
+            return $this->apiResponse(null, 'Add to cart sussessfully', 200);
         } else {
-            return response()->json([
-                'message' => 'you must login first',
-            ], 500);
+            return $this->apiResponse(null, 'you must login first', 500);
         }
     }
 
@@ -58,14 +54,10 @@ class  CartRepository implements CartRepositoryInterface
                     'message' => 'delete sussessfully',
                 ], 201);
             } else {
-                return response()->json([
-                    'message' => 'product not found',
-                ], 500);
+                return $this->apiResponse(null, 'product not found', 404);
             }
         } else {
-            return response()->json([
-                'message' => 'you must login first',
-            ], 500);
+            return $this->apiResponse(null, 'you must login first', 500);
         }
     }
 }

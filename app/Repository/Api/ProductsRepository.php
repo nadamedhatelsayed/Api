@@ -3,6 +3,8 @@
 
 namespace App\Repository\Api;
 
+use App\Http\Controllers\Api\ApiResponseTrait;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductDetails;
 use App\Models\Rating;
@@ -13,16 +15,13 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductsRepository implements ProductsRepositoryInterface
 {
-
+    use ApiResponseTrait;
     public function index()
     {
 
-        $data[] = Product::with('details')->get();
+        $product = ProductResource::collection(Product::with('details')->get());
 
-        return response()->json([
-            'message' => 'All products',
-            'products' => $data
-        ], 201);
+        return $this->apiResponse($product, 'ok', 200);
     }
 
     public function store($request)
@@ -39,13 +38,10 @@ class ProductsRepository implements ProductsRepositoryInterface
                 'description' => $request->description,
             ]);
 
-            return response()->json([
-                'message' => 'created product successfully',
-            ], 201);
+
+            return $this->apiResponse(new ProductResource($product), 'The post Save', 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e,
-            ], 500);
+            return $this->apiResponse(null, 'The post Not Save', 400);
         }
     }
 
@@ -64,16 +60,9 @@ class ProductsRepository implements ProductsRepositoryInterface
                 'title' => $request->title,
                 'description' => $request->description,
             ]);
-
-            return response()->json([
-                'message' => 'Update product successfully',
-                'product' => $product
-            ], 201);
+            return $this->apiResponse(new ProductResource($product), 'Update product successfully', 201);
         } catch (\Exception $e) {
-
-            return response()->json([
-                'message' => $e,
-            ], 500);
+            return $this->apiResponse(null, 'The product Not Found', 404);
         }
     }
 
@@ -81,15 +70,17 @@ class ProductsRepository implements ProductsRepositoryInterface
     {
         try {
             $product = Product::where('id', $id)->first();
+
             ProductDetails::where('product_id', $product->id)->delete();
+
+            if ($product) {
+                return $this->apiResponse(null, 'The product deleted', 200);
+            } else {
+                return $this->apiResponse(null, 'The post Not Found', 404);
+            }
             $product->delete();
-            return response()->json([
-                'message' => 'Delete product successfully',
-            ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' =>  $e,
-            ], 500);
+            return $this->apiResponse(null, 'The product Not Found', 404);
         }
     }
 
@@ -101,23 +92,20 @@ class ProductsRepository implements ProductsRepositoryInterface
                 $rate->update([
                     'rating'     => $request->rate,
                 ]);
-                return response()->json([
-                    'message' => 'update product rate successfully',
-                ], 200);
+               
+                return $this->apiResponse(null, 'update product rate successfully', 200);
+
             } else {
                 Rating::create([
                     'user_id'    => auth()->user()->id,
                     'product_id' => $request->product_id,
                     'rating'     => $request->rate,
                 ]);
-                return response()->json([
-                    'message' => 'create product rate successfully',
-                ], 200);
+
+                return $this->apiResponse(null, 'create product rate successfully', 200);
             }
         } else {
-            return response()->json([
-                'message' => 'you must login first',
-            ], 500);
+            return $this->apiResponse(null, 'you must login first', 500);
         }
     }
 }

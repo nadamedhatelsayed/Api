@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreProduct;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Api\ApiResponseTrait;
 use App\Repository\Api\ProductsRepositoryInterface;
  
 class ProductsController extends Controller
 {
+    use ApiResponseTrait;
     /**
      * Create a new AuthController instance.
      *

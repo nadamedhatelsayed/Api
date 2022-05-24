@@ -3,30 +3,26 @@
 
 namespace App\Repository\Api;
 
- use App\Models\UserApi;
+use App\Http\Controllers\Api\ApiResponseTrait;
+use App\Models\UserApi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class AuthRepository implements AuthRepositoryInterface
 {
-   
+    use ApiResponseTrait;
     public function login($request){
        
     	$validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
-        //  if (auth()->attempt($validator->validated())) {
-        //     return response()->json($validator->errors(), 422);
-        // }
-        //dd($validator->validated() );
+        
         
         if (! $token = auth()->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-      //dd($token);
-    //   $user =UserApi::first();
-    //     Auth::login( $user);
+      
         return $this->createNewToken($token);
     }
     /**
@@ -41,17 +37,16 @@ class AuthRepository implements AuthRepositoryInterface
             'password' => 'required|string|confirmed|min:6',
         ]);
         if($validator->fails()){
-            return response()->json($validator->errors()->toJson(), 400);
-        }
+            return $this->apiResponse(null, $validator->errors()->toJson(), 404);
+
+         }
         $user = UserApi::create(array_merge(
                     $validator->validated(),
                     ['password' => bcrypt($request->password),'guard'=>'api']
                 ));
-        // Auth::login( $user);
-        return response()->json([
-            'message' => 'User successfully registered',
-            'user' => $user
-        ], 201);
+       
+        return $this->apiResponse($user, 'User successfully registered', 200);
+
     }
 
     /**
